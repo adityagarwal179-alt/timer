@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Vintage Flip Clock</title>
+    <style>
+        /* --- CSS STYLING & ANIMATIONS --- */
+        :root {
+            --bg-color: #0f172a;
+            --container-bg: #1e293b;
+            --card-bg: #334155;
+            --text-color: #f8fafc;
+            --accent-color: #38bdf8;
+            --grid-line: rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --container-bg: #e2e8f0;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --accent-color: #0284c7;
+            --grid-line: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="neon"] {
+            --bg-color: #000000;
+            --container-bg: #111111;
+            --card-bg: #222222;
+            --text-color: #39ff14;
+            --accent-color: #ff007f;
+            --grid-line: rgba(57, 255, 20, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.5s ease;
+            padding: 20px;
+        }
+
+        .clock-container {
+            background: var(--container-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .date-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            color: var(--accent-color);
+            text-transform: uppercase;
+        }
+
+        .flip-clock {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .flip-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .unit-label {
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 8px;
+            opacity: 0.7;
+            letter-spacing: 1px;
+        }
+
+        .flip-card {
+            position: relative;
+            width: 80px;
+            height: 100px;
+            font-size: 4rem;
+            font-weight: bold;
+            line-height: 100px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            perspective: 400px;
+        }
+
+        /* Specialized smaller card layout for AM/PM indicator */
+        .flip-card.ampm-card {
+            width: 65px;
+            font-size: 2.2rem;
+        }
+
+        .flip-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 2px;
+            background-color: var(--grid-line);
+            z-index: 5;
+        }
+
+        .card-number {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            backface-visibility: hidden;
+        }
+
+        .animate-flip {
+            animation: flipEffect 0.6s ease-in-out;
+        }
+
+        @keyframes flipEffect {
+            0% { transform: rotateX(0deg); }
+            50% { transform: rotateX(-90deg); opacity: 0.5; }
+            100% { transform: rotateX(0deg); }
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--grid-line);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+
+        .setting-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-row label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            opacity: 0.8;
+            text-align: left;
+        }
+
+        h3 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--grid-line);
+            padding-bottom: 5px;
+        }
+
+        button, select, input {
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--grid-line);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            outline: none;
+            margin: 5px 2px;
+            transition: all 0.2s;
+        }
+
+        button:hover, select:hover {
+            border-color: var(--accent-color);
+            background-color: var(--grid-line);
+        }
+
+        .sound-btn {
+            background: var(--accent-color);
+            color: #fff;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            animation: pulseSound 2s infinite;
+        }
+
+        @keyframes pulseSound {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        input[type="time"] {
+            width: 130px;
+            text-align: center;
+            align-self: center;
+        }
+
+        .stopwatch-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .alarm-status {
+            font-size: 0.85rem;
+            margin-top: 5px;
+            color: var(--accent-color);
+        }
+
+        /* --- DONATION BOX BOTTOM ANIMATIONS --- */
+        .donate-container {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 2px dashed #22c55e;
+            border-radius: 14px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            animation: slideUpBottom 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .donate-text {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            opacity: 0.9;
+        }
+
+        .donate-link-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+            transition: all 0.3s ease;
+            animation: heartbeatPulse 2.5s infinite ease-in-out;
+        }
+
+        .donate-link-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.6);
+            filter: brightness(1.1);
+        }
+
+        .donate-note {
+            display: block;
+            font-size: 0.7rem;
+            margin-top: 8px;
+            opacity: 0.5;
+        }
+
+        @keyframes slideUpBottom {
+            0% { transform: translateY(40px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes heartbeatPulse {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.04); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.04); }
+            70% { transform: scale(1); }
+        }
+        
+        .sound-hint {
+            font-size: 0.75rem;
+            margin-top: 15px;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="clock-container">
+        <div class="date-display" id="dateDisplay">LOADING DATE...</div>
+
+        <button class="sound-btn" id="enableAudioBtn" onclick="initAudio()">🔊 Click Here to Turn On Sound</button>
+
+        <div class="flip-clock">
+            <div class="flip-unit">
+                <div class="flip-card" id="hourCard"><div class="card-number" id="hours">00</div></div>
+                <div class="unit-label">Hours</div>
+            </div>
+            <div class="flip-unit">
+                <div class="flip-card" id="minuteCard"><div class="card-number" id="minutes">00</div></div>
+                <div class="unit-label">Minutes</div>
+            </div>
+            <div class="flip-unit">
+                <div class="flip-card" id="secondCard"><div class="card-number" id="seconds">00</div></div>
+                <div class="unit-label">Seconds</div>
+            </div>
+            <div class="flip-unit" id="ampmUnit" style="display: none;">
+                <div class="flip-card ampm-card" id="ampmCard"><div class="card-number" id="ampm">AM</div></div>
+                <div class="unit-label">Period</div>
+            </div>
+        </div>
+
+        <div class="features-grid">
+            <div class="panel">
+                <h3>Clock Settings</h3>
+                <div class="setting-row">
+                    <label for="themeSelector">Theme:</label>
+                    <select id="themeSelector" onchange="changeTheme()">
+                        <option value="dark">Cyber Slate (Dark)</option>
+                        <option value="light">Classic Office (Light)</option>
+                        <option value="neon">Retro Arcade (Neon)</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <label for="formatSelector">Format:</label>
+                    <select id="formatSelector" onchange="changeFormat()">
+                        <option value="24h">24 Hour Format</option>
+                        <option value="12h">12 Hour (AM/PM)</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <label for="chimeSelector">Hourly Chime:</label>
+                    <select id="chimeSelector" onchange="changeChime()">
+                        <option value="off">Muted</option>
+                        <option value="on">Active 🔔</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>Smart Alarm</h3>
+                <input type="time" id="alarmTime">
+                <div style="text-align: center; margin-top: auto;">
+                    <button onclick="setAlarm()">Set</button>
+                    <button onclick="clearAlarm()">Clear</button>
+                </div>
+                <div class="alarm-status" id="alarmStatus">No alarm set</div>
+            </div>
+
+            <div class="panel" style="grid-column: span 2;">
+                <h3>Precision Stopwatch</h3>
+                <div class="stopwatch-display" id="stopwatchDisplay">00:00:00.00</div>
+                <div style="text-align: center;">
+                    <button onclick="startStopwatch()">Start</button>
+                    <button onclick="pauseStopwatch()">Pause</button>
+                    <button onclick="resetStopwatch()">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="donate-container">
+            <p class="donate-text">Enjoying this platform? Support development so I can keep building creative web installations!</p>
+            <a href="upi://pay?pa=adityaagarwal17092004@ptaxis&pn=Aditya&cu=INR&tr=T177868051037917&mode=02&orgid=000000" class="donate-link-btn">
+                ❤️ Support Creation (Donate via UPI)
+            </a>
+            <span class="donate-note">*Note: UPI deep-links launch instantly on compatible mobile devices with banking apps installed.</span>
+        </div>
+        
+        <div class="sound-hint">Click anywhere on the screen to enable sound</div>
+    </div>
+
+    <script>
+        let alarmTime = null;
+        let alarmInterval = null;
+        
+        let stopwatchInterval = null;
+        let elapsedMilliseconds = 0;
+        
+        let audioCtx = null;
+        let soundEnabled = false;
+
+        // Configuration State (With defaults mapped to LocalStorage memory fallback)
+        let clockFormat = localStorage.getItem('flip_clock_format') || '24h';
+        let hourlyChime = localStorage.getItem('flip_clock_chime') || 'off';
+        let currentTheme = localStorage.getItem('flip_clock_theme') || 'dark';
+
+        // --- AUDIO INITIALIZATION ---
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            soundEnabled = true;
+            
+            playFlipSound(); 
+            
+            const btn = document.getElementById('enableAudioBtn');
+            btn.innerHTML = "✅ Sound is Active";
+            btn.style.animation = "none";
+            btn.style.background = "#22c55e";
+        }
+
+        // --- LOUDER FLIP SOUND SYNTHESIZER ---
+        function playFlipSound() {
+            if (!soundEnabled || !audioCtx) return;
+
+            try {
+                const bufferSize = audioCtx.sampleRate * 0.05; 
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 800; 
+                filter.Q.value = 1.0; 
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.6, audioCtx.currentTime); 
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04); 
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                noise.start();
+            } catch(e) {
+                console.error("Audio error:", e);
+            }
+        }
+
+        // --- NEW FEATURE: HOURLY CHIME SYNTHESIZER ---
+        function playHourlyChime() {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                // Double high pitched electronic crisp watch pings
+                const osc1 = audioCtx.createOscillator();
+                const osc2 = audioCtx.createOscillator();
+                const chimeGain = audioCtx.createGain();
+
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(1200, now);
+                osc1.frequency.setValueAtTime(1500, now + 0.12); // Alternate note up
+
+                chimeGain.gain.setValueAtTime(0.2, now);
+                chimeGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+                osc1.connect(chimeGain);
+                chimeGain.connect(audioCtx.destination);
+                
+                osc1.start(now);
+                osc1.stop(now + 0.25);
+            } catch(e) {
+                console.error("Chime error:", e);
+            }
+        }
+
+        // --- CORE CLOCK & FLIP LOGIC ---
+        function updateClock() {
+            const now = new Date();
+            let rawHours = now.getHours();
+            const mins = String(now.getMinutes()).padStart(2, '0');
+            const secs = String(now.getSeconds()).padStart(2, '0');
+            
+            // Handle AM/PM logic and layout parsing
+            let ampmValue = "";
+            if (clockFormat === '12h') {
+                document.getElementById('ampmUnit').style.display = 'flex';
+                ampmValue = rawHours >= 12 ? 'PM' : 'AM';
+                rawHours = rawHours % 12;
+                rawHours = rawHours ? rawHours : 12; // convert '0' value to '12'
+            } else {
+                document.getElementById('ampmUnit').style.display = 'none';
+            }
+
+            const hrs = String(rawHours).padStart(2, '0');
+
+            // Format Calendar Date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('dateDisplay').textContent = now.toLocaleDateString('en-US', options);
+
+            // Update individual layout engines
+            updateFlipUnit('hours', 'hourCard', hrs);
+            updateFlipUnit('minutes', 'minuteCard', mins);
+            updateFlipUnit('seconds', 'secondCard', secs);
+            if (clockFormat === '12h') {
+                updateFlipUnit('ampm', 'ampmCard', ampmValue);
+            }
+
+            // TRIGGER HOURLY CHIME 
+            if (hourlyChime === 'on' && mins === '00' && secs === '00') {
+                playHourlyChime();
+            }
+
+            // Check Alarm condition
+            const checkHrs24 = String(now.getHours()).padStart(2, '0');
+            const currentTimeString = `${checkHrs24}:${mins}`;
+            if (alarmTime === currentTimeString && secs === '00') {
+                triggerAlarm();
+            }
+        }
+
+        function updateFlipUnit(elementId, cardId, value) {
+            const element = document.getElementById(elementId);
+            const card = document.getElementById(cardId);
+            
+            if (element.textContent !== value) {
+                playFlipSound();
+                element.textContent = value;
+                card.classList.remove('animate-flip');
+                void card.offsetWidth; 
+                card.classList.add('animate-flip');
+            }
+        }
+
+        // --- PREFERENCES UPDATES AND LOCALSTORAGE MEMORY ---
+        function changeTheme() {
+            const theme = document.getElementById('themeSelector').value;
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('flip_clock_theme', theme);
+        }
+
+        function changeFormat() {
+            clockFormat = document.getElementById('formatSelector').value;
+            localStorage.setItem('flip_clock_format', clockFormat);
+            updateClock();
+        }
+
+        function changeChime() {
+            hourlyChime = document.getElementById('chimeSelector').value;
+            localStorage.setItem('flip_clock_chime', hourlyChime);
+        }
+
+        // Apply saved configuration constraints on bootup initialization
+        function loadPreferences() {
+            document.getElementById('themeSelector').value = currentTheme;
+            document.documentElement.setAttribute('data-theme', currentTheme);
+
+            document.getElementById('formatSelector').value = clockFormat;
+            document.getElementById('chimeSelector').value = hourlyChime;
+        }
+
+        // --- ALARM CONTROLS ---
+        function setAlarm() {
+            const input = document.getElementById('alarmTime').value;
+            if (input) {
+                alarmTime = input;
+                document.getElementById('alarmStatus').textContent = `Alarm active for: ${input}`;
+            } else {
+                alert("Please pick a valid time first!");
+            }
+        }
+
+        function clearAlarm() {
+            alarmTime = null;
+            document.getElementById('alarmStatus').textContent = "No alarm set";
+        }
+
+        function triggerAlarm() {
+            document.getElementById('alarmStatus').textContent = "⏰ WAKE UP! Alarm Ringing!";
+            if (!soundEnabled) initAudio(); 
+            
+            const alarmCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = alarmCtx.createOscillator();
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(440, alarmCtx.currentTime); 
+            oscillator.frequency.setValueAtTime(880, alarmCtx.currentTime + 0.5); 
+            oscillator.connect(alarmCtx.destination);
+            oscillator.start();
+            oscillator.stop(alarmCtx.currentTime + 1.5); 
+            
+            clearAlarm();
+        }
+
+        // --- STOPWATCH UTILITIES ---
+        function startStopwatch() {
+            if (!stopwatchInterval) {
+                const startTime = Date.now() - elapsedMilliseconds;
+                stopwatchInterval = setInterval(() => {
+                    elapsedMilliseconds = Date.now() - startTime;
+                    displayStopwatch();
+                }, 10);
+            }
+        }
+
+        function pauseStopwatch() {
+            clearInterval(stopwatchInterval);
+            stopwatchInterval = null;
+        }
+
+        function resetStopwatch() {
+            clearInterval(stopwatchInterval);
+            stopwatchInterval = null;
+            elapsedMilliseconds = 0;
+            displayStopwatch();
+        }
+
+        function displayStopwatch() {
+            let totalSecs = Math.floor(elapsedMilliseconds / 1000);
+            let ms = Math.floor((elapsedMilliseconds % 1000) / 10);
+            let mins = Math.floor(totalSecs / 60);
+            let hrs = Math.floor(mins / 60);
+
+            let displayHrs = String(hrs % 24).padStart(2, '0');
+            let displayMins = String(mins % 60).padStart(2, '0');
+            let displaySecs = String(totalSecs % 60).padStart(2, '0');
+            let displayMs = String(ms).padStart(2, '0');
+
+            document.getElementById('stopwatchDisplay').textContent = 
+                `${displayHrs}:${displayMins}:${displaySecs}.${displayMs}`;
+        }
+
+        window.addEventListener('click', () => {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        });
+
+        // Initialize user profile settings, execute and bind cycle
+        loadPreferences();
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>
